@@ -31,7 +31,7 @@ public class Resume {
     private String countryCode;
     private String region;
 
-    //TODO:Replace with the OneToOne relation with user table
+    //TODO:Replace with the OneToOne relation with user
     private int userId;
 
     @OneToMany(mappedBy="resumeObj", fetch=FetchType.LAZY)

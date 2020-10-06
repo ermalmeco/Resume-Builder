@@ -61,10 +61,10 @@ public class ResumeController {
      * @throws JsonResumeParseException
      * @throws JsonProcessingException
      */
-    @PostMapping("/addResume")
-    public ResponseEntity<String> addResume(@RequestBody String jsonResume) throws JsonResumeParseException, JsonProcessingException {
+    @PostMapping("/addResume/{userId}")
+    public ResponseEntity<String> addResume(@RequestBody String jsonResume, @PathVariable Integer userId) throws Exception {
         logger.info("Controller call /addResume");
-        Resume result = service.saveOrUpdateResume(jsonResume,0);
+        Resume result = service.createNewResume(jsonResume,userId);
         String jsonResult = mapper.writeValueAsString(result);
         logger.debug("Controller result /addResume : " + jsonResult);
         return new ResponseEntity<>(jsonResult, HttpStatus.OK);
@@ -83,9 +83,9 @@ public class ResumeController {
      * @throws JsonProcessingException
      */
     @PutMapping("/editResume/{userId}")
-    public ResponseEntity<String> editResume(@RequestBody String jsonResume, @PathVariable Integer userId) throws JsonResumeParseException, JsonProcessingException {
+    public ResponseEntity<String> editResume(@RequestBody String jsonResume, @PathVariable Integer userId) throws Exception {
         logger.info("Controller call /editResume");
-        Resume result = service.saveOrUpdateResume(jsonResume,userId);
+        Resume result = service.editResume(jsonResume,userId);
         String jsonResult = mapper.writeValueAsString(result);
         logger.debug("Controller result /editResume : " + jsonResult);
         return new ResponseEntity<>(jsonResult, HttpStatus.OK);

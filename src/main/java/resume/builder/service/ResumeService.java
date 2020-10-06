@@ -59,7 +59,34 @@ public class ResumeService {
      */
     public Resume getResumeByUserId(int userId) {
         resume.builder.entity.Resume userResume = resumeRepository.findResumeByUserId(userId);
+        if (userResume == null){
+            return null;
+        }
         return buildResumeStructure(userResume);
+    }
+
+    /**
+     *  This is the function that is called to add a new Resume
+     *
+     * @param jsonData String json based on the schema defined by https://jsonresume.org/schema/
+     * @param userIdParameter int The id of the user to whom the function is saving the details
+     * @return Object Resume.class type
+     * @throws Exception
+     */
+    public Resume createNewResume(String jsonData,Integer userIdParameter) throws Exception {
+        return saveOrUpdateResume(jsonData,userIdParameter,true);
+    }
+
+    /**
+     *  This is the function that is called to edit the Resume
+     *
+     * @param jsonData String json based on the schema defined by https://jsonresume.org/schema/
+     * @param userIdParameter int The id of the user to whom the function is saving the details
+     * @return Object Resume.class type
+     * @throws Exception
+     */
+    public Resume editResume(String jsonData,Integer userIdParameter) throws Exception {
+        return saveOrUpdateResume(jsonData,userIdParameter,false);
     }
 
     /**
@@ -69,23 +96,25 @@ public class ResumeService {
      *  details to save them latter on the database.
      *
      * @param jsonData String json based on the schema defined by https://jsonresume.org/schema/
-     * @param userIdParameter int The id of the user to whom the function is editing the details if it is not a new Resume,
-     *                        otherwise the userIdParameter will be 0.
+     * @param userIdParameter int The id of the user to whom the function is saving the details
      * @return Object Resume.class type
-     * @throws JsonResumeParseException
+     * @throws Exception
      */
-    public Resume saveOrUpdateResume(String jsonData,Integer userIdParameter) throws JsonResumeParseException {
+    public Resume saveOrUpdateResume(String jsonData,Integer userIdParameter,boolean isNew) throws Exception {
         Resume deserializedResume;
 
         final JsonResume jsonResume = new JsonResume(jsonData);
         if (jsonResume.isValid()){
             deserializedResume = jsonResume.deserialize();
 
-            resume.builder.entity.Resume newResume = new resume.builder.entity.Resume();
-
-            if (userIdParameter != 0) {
-                newResume = resumeRepository.findResumeByUserId(userIdParameter);
+            resume.builder.entity.Resume newResume = resumeRepository.findResumeByUserId(userIdParameter);
+            if (!isNew) {
                 newResume = clearExistingData(newResume);
+            } else {
+                if (newResume != null){
+                    throw new Exception("User already has a Resume, You can edit that one or delete it before creating another one!");
+                }
+                newResume = new resume.builder.entity.Resume();
             }
 
             newResume.setName(deserializedResume.getBasicInfo().getName());
@@ -100,8 +129,7 @@ public class ResumeService {
             newResume.setCity(deserializedResume.getBasicInfo().getLocation().getCity());
             newResume.setCountryCode(deserializedResume.getBasicInfo().getLocation().getCountryCode());
             newResume.setRegion(deserializedResume.getBasicInfo().getLocation().getRegion());
-            //TODO:Replace with the OneToOne relation with user table
-            newResume.setUserId(1);
+            newResume.setUserId(userIdParameter);
             resume.builder.entity.Resume result = resumeRepository.save(newResume);
 
             List<Work> workList = new ArrayList<>();
