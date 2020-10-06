@@ -1,7 +1,7 @@
 package resume.builder.dto.mapper;
 
 import io.gitgub.eaxdev.jsonresume.validator.model.Skill;
-import resume.builder.Utils.Constants;
+import resume.builder.utils.Constants;
 
 public class SkillMapper {
     public static Skill toInterestDto(resume.builder.entity.Skill skill){

@@ -4,7 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import resume.builder.entity.Language;
 import resume.builder.entity.Resume;
-import resume.builder.entity.Skill;
 import resume.builder.repository.LanguageRepository;
 
 @Service
@@ -22,7 +21,6 @@ public class LanguageService {
     }
 
     public void delete(Language language){
-        System.out.println("Duke fshi languagen "+language.toString());
         repository.delete(language);
     }
 }

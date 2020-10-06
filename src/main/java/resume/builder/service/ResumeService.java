@@ -6,7 +6,7 @@ import io.gitgub.eaxdev.jsonresume.validator.model.BasicInfo;
 import io.gitgub.eaxdev.jsonresume.validator.model.Resume;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import resume.builder.Utils.Constants;
+import resume.builder.utils.Constants;
 import resume.builder.dto.mapper.*;
 import resume.builder.entity.*;
 import resume.builder.repository.ResumeRepository;
@@ -65,7 +65,7 @@ public class ResumeService {
     /**
      *  This function saves all the details for a resume into the database.
      *  It firstly validates the json passed on the parameters to match the json schema defined by https://jsonresume.org/schema/.
-     *  Then if it is an update it retrieves the existing Resume or if not it creates a new one and map all the necesery
+     *  Then if it is an update it retrieves the existing Resume or if not it creates a new one and map all the necessary
      *  details to save them latter on the database.
      *
      * @param jsonData String json based on the schema defined by https://jsonresume.org/schema/
@@ -75,7 +75,7 @@ public class ResumeService {
      * @throws JsonResumeParseException
      */
     public Resume saveOrUpdateResume(String jsonData,Integer userIdParameter) throws JsonResumeParseException {
-        Resume deserializedResume = null;
+        Resume deserializedResume;
 
         final JsonResume jsonResume = new JsonResume(jsonData);
         if (jsonResume.isValid()){
@@ -168,7 +168,7 @@ public class ResumeService {
             System.out.println("Done");
             return buildResumeStructure(result);
         }
-        return deserializedResume;
+        return null;
     }
 
     /**
@@ -181,8 +181,12 @@ public class ResumeService {
     public String deleteResume(Integer userIdParameter){
         resume.builder.entity.Resume resume = resumeRepository.findResumeByUserId(userIdParameter);
         resume = clearExistingData(resume);
-        resumeRepository.delete(resume);
-        return Constants.RESUME_SUCCESS_DELETE_MESSAGE;
+        try {
+            resumeRepository.delete(resume);
+            return Constants.RESUME_SUCCESS_DELETE_MESSAGE;
+        } catch (Exception ex) {
+            return ex.toString();
+        }
     }
 
     /**

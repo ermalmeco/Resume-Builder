@@ -1,8 +1,7 @@
 package resume.builder.dto.mapper;
 
-import io.gitgub.eaxdev.jsonresume.validator.model.Volunteer;
 import io.gitgub.eaxdev.jsonresume.validator.model.Work;
-import resume.builder.Utils.Constants;
+import resume.builder.utils.Constants;
 
 public class WorkMapper extends Work {
     public static Work toWorkDto(resume.builder.entity.Work work){

@@ -1,7 +1,5 @@
 package resume.builder.dto.mapper;
 
-import io.gitgub.eaxdev.jsonresume.validator.model.BasicInfo;
-import io.gitgub.eaxdev.jsonresume.validator.model.Location;
 import io.gitgub.eaxdev.jsonresume.validator.model.Profiles;
 
 public class ProfileMapper {

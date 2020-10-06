@@ -1,7 +1,7 @@
 package resume.builder.dto.mapper;
 
 import io.gitgub.eaxdev.jsonresume.validator.model.Volunteer;
-import resume.builder.Utils.Constants;
+import resume.builder.utils.Constants;
 
 public class VolunteerMapper {
     public static Volunteer toVolunteerDto(resume.builder.entity.Volunteer volunteer){

@@ -1,7 +1,7 @@
 package resume.builder.dto.mapper;
 
 import io.gitgub.eaxdev.jsonresume.validator.model.Education;
-import resume.builder.Utils.Constants;
+import resume.builder.utils.Constants;
 
 
 public class EducationMapper {

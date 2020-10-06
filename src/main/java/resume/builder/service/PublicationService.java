@@ -4,7 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import resume.builder.entity.Publication;
 import resume.builder.entity.Resume;
-import resume.builder.entity.Volunteer;
 import resume.builder.repository.PublicationRepository;
 
 @Service

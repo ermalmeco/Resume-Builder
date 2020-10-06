@@ -1,4 +1,4 @@
-package resume.builder.Utils;
+package resume.builder.utils;
 
 public class Constants {
     public static final String COURSES_DB_DELIMITER = "##";

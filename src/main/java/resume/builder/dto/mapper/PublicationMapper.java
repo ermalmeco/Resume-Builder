@@ -1,6 +1,5 @@
 package resume.builder.dto.mapper;
 
-import io.gitgub.eaxdev.jsonresume.validator.model.Language;
 import io.gitgub.eaxdev.jsonresume.validator.model.Publication;
 
 public class PublicationMapper {

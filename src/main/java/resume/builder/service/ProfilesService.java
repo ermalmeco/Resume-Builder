@@ -4,7 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import resume.builder.entity.Profiles;
 import resume.builder.entity.Resume;
-import resume.builder.entity.Skill;
 import resume.builder.repository.ProfilesRepository;
 
 @Service

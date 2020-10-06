@@ -2,10 +2,9 @@ package resume.builder.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import resume.builder.Utils.Constants;
+import resume.builder.utils.Constants;
 import resume.builder.entity.Resume;
 import resume.builder.entity.Skill;
-import resume.builder.entity.Volunteer;
 import resume.builder.repository.SkillRepository;
 
 @Service

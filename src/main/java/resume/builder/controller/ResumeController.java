@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import resume.builder.ResumeApplication;
+import resume.builder.utils.Constants;
 import resume.builder.service.ResumeService;
 
 import javax.validation.Valid;
@@ -41,12 +42,12 @@ public class ResumeController {
      * @throws JsonProcessingException
      */
     @GetMapping("/resume/{userId}")
-    public ResponseEntity getResume(@PathVariable @Valid @Min(value = 1,message = "User Id should be a number higher than 0") int userId) throws JsonProcessingException {
+    public ResponseEntity<String> getResume(@PathVariable @Valid @Min(value = 1,message = "User Id should be a number higher than 0") int userId) throws JsonProcessingException {
         logger.info("Controller call /getResume/{userid} where userId = "+userId);
         Resume result =  service.getResumeByUserId(userId);
         String jsonResult = mapper.writeValueAsString(result);
         logger.debug("Controller result /getResume/{userid} where userId = " + userId + ": " + jsonResult);
-        return new ResponseEntity(jsonResult, HttpStatus.OK);
+        return new ResponseEntity<>(jsonResult, HttpStatus.OK);
     }
 
     /**
@@ -61,12 +62,12 @@ public class ResumeController {
      * @throws JsonProcessingException
      */
     @PostMapping("/addResume")
-    public ResponseEntity addResume(@RequestBody String jsonResume) throws JsonResumeParseException, JsonProcessingException {
+    public ResponseEntity<String> addResume(@RequestBody String jsonResume) throws JsonResumeParseException, JsonProcessingException {
         logger.info("Controller call /addResume");
         Resume result = service.saveOrUpdateResume(jsonResume,0);
         String jsonResult = mapper.writeValueAsString(result);
         logger.debug("Controller result /addResume : " + jsonResult);
-        return new ResponseEntity(jsonResult, HttpStatus.OK);
+        return new ResponseEntity<>(jsonResult, HttpStatus.OK);
     }
 
     /**
@@ -82,12 +83,12 @@ public class ResumeController {
      * @throws JsonProcessingException
      */
     @PutMapping("/editResume/{userId}")
-    public ResponseEntity editResume(@RequestBody String jsonResume, @PathVariable Integer userId) throws JsonResumeParseException, JsonProcessingException {
+    public ResponseEntity<String> editResume(@RequestBody String jsonResume, @PathVariable Integer userId) throws JsonResumeParseException, JsonProcessingException {
         logger.info("Controller call /editResume");
         Resume result = service.saveOrUpdateResume(jsonResume,userId);
         String jsonResult = mapper.writeValueAsString(result);
         logger.debug("Controller result /editResume : " + jsonResult);
-        return new ResponseEntity(jsonResult, HttpStatus.OK);
+        return new ResponseEntity<>(jsonResult, HttpStatus.OK);
     }
 
     /**
@@ -95,13 +96,17 @@ public class ResumeController {
      *  defined on Constants as the RESUME_SUCCESS_DELETE_MESSAGE
      *
      * @param userId int The id of the user to whom we are deleting the Resume
-     * @return Object contains the result message text and also the status code. Right now the status code is always OK.
+     * @return Object contains the result message text and also the status code.
      */
     @DeleteMapping("/deleteResume/{userId}")
-    public ResponseEntity deleteResume(@PathVariable Integer userId) {
+    public ResponseEntity<String> deleteResume(@PathVariable Integer userId) {
         logger.info("Controller call /deleteResume");
         String result = service.deleteResume(userId);
         logger.debug("Controller result /deleteResume : " + result);
-        return new ResponseEntity(result, HttpStatus.OK);
+        if (result.equals(Constants.RESUME_SUCCESS_DELETE_MESSAGE)) {
+            return new ResponseEntity<>(result, HttpStatus.OK);
+        }else{
+            return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
+        }
     }
 }
