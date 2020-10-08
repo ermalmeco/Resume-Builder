@@ -13,7 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import resume.builder.ResumeApplication;
-import resume.builder.utils.Constants;
+import resume.builder.excteption.RecordNotFoundException;
+import resume.builder.excteption.ResumeAlreadyExists;
 import resume.builder.service.ResumeService;
 
 import javax.validation.Valid;
@@ -39,15 +40,24 @@ public class ResumeController {
      *
      * @param userId int The user id for whom the function is getting the Resume
      * @return Object contains the json result and also the status code. Right now the status code is always OK.
-     * @throws JsonProcessingException
      */
     @GetMapping("/resume/{userId}")
-    public ResponseEntity<String> getResume(@PathVariable @Valid @Min(value = 1,message = "User Id should be a number higher than 0") int userId) throws JsonProcessingException {
-        logger.info("Controller call /getResume/{userid} where userId = "+userId);
-        Resume result =  service.getResumeByUserId(userId);
-        String jsonResult = mapper.writeValueAsString(result);
-        logger.debug("Controller result /getResume/{userid} where userId = " + userId + ": " + jsonResult);
-        return new ResponseEntity<>(jsonResult, HttpStatus.OK);
+    public ResponseEntity<String> getResume(@PathVariable @Valid @Min(value = 1,message = "User Id should be a number higher than 0") int userId) {
+        logger.info("Controller call /resume/{userid} where userId = "+userId);
+        try {
+            Resume result =  service.getResumeByUserId(userId);
+            String jsonResult = mapper.writeValueAsString(result);
+            logger.debug("Controller result /resume/{userId} where userId = " + userId + ": " + jsonResult);
+            return new ResponseEntity<>(jsonResult, HttpStatus.OK);
+        }catch (RecordNotFoundException rex){
+            System.out.println(rex.getMessage());
+            logger.debug("Controller failed to get resume at /resume/{userId} : " + rex.getMessage());
+            throw new RecordNotFoundException(rex.getMessage());
+        }catch (JsonProcessingException ex){
+            System.out.println(ex.getMessage());
+            logger.debug("Controller failed to parse Json at /resume/{userId} : " + ex.getMessage());
+            throw new RecordNotFoundException(ex.getMessage());
+        }
     }
 
     /**
@@ -57,17 +67,21 @@ public class ResumeController {
      *  and then returns the resume structure. The data are converted again into json and are passed to front end.
      *
      * @param jsonResume String json based on the schema defined by https://jsonresume.org/schema/
-     * @return Object contains the json result and also the status code. Right now the status code is always OK.
-     * @throws JsonResumeParseException
-     * @throws JsonProcessingException
+     * @return Object contains the json result and also the status code.
      */
     @PostMapping("/addResume/{userId}")
-    public ResponseEntity<String> addResume(@RequestBody String jsonResume, @PathVariable Integer userId) throws Exception {
+    public ResponseEntity<Object> addResume(@RequestBody String jsonResume, @PathVariable Integer userId) throws Exception {
         logger.info("Controller call /addResume");
-        Resume result = service.createNewResume(jsonResume,userId);
-        String jsonResult = mapper.writeValueAsString(result);
-        logger.debug("Controller result /addResume : " + jsonResult);
-        return new ResponseEntity<>(jsonResult, HttpStatus.OK);
+        try {
+            Resume result = service.createNewResume(jsonResume, userId);
+            String jsonResult = mapper.writeValueAsString(result);
+            logger.debug("Controller result /addResume : " + jsonResult);
+            return new ResponseEntity<>(jsonResult, HttpStatus.OK);
+        }catch (ResumeAlreadyExists ex){
+            System.out.println(ex.getMessage());
+            logger.debug("Controller failed at /addResume : " + ex.getMessage());
+            throw new ResumeAlreadyExists(ex.getMessage());
+        }
     }
 
     /**
@@ -79,16 +93,22 @@ public class ResumeController {
      * @param jsonResume String json based on the schema defined by https://jsonresume.org/schema/
      * @param userId int The id of the user to whom the function is editing the details
      * @return Object contains the json result and also the status code. Right now the status code is always OK.
-     * @throws JsonResumeParseException
-     * @throws JsonProcessingException
+     * @throws JsonResumeParseException Exception that is thrown when resume is not parsed correctly
+     * @throws JsonProcessingException Exception that is thrown when resume is not processed correctly
      */
     @PutMapping("/editResume/{userId}")
     public ResponseEntity<String> editResume(@RequestBody String jsonResume, @PathVariable Integer userId) throws Exception {
-        logger.info("Controller call /editResume");
-        Resume result = service.editResume(jsonResume,userId);
-        String jsonResult = mapper.writeValueAsString(result);
-        logger.debug("Controller result /editResume : " + jsonResult);
-        return new ResponseEntity<>(jsonResult, HttpStatus.OK);
+        try {
+            logger.info("Controller call /editResume");
+            Resume result = service.editResume(jsonResume, userId);
+            String jsonResult = mapper.writeValueAsString(result);
+            logger.debug("Controller result /editResume : " + jsonResult);
+            return new ResponseEntity<>(jsonResult, HttpStatus.OK);
+        }catch (RecordNotFoundException rex){
+            System.out.println(rex.getMessage());
+            logger.debug("Controller failed at /editResume : " + rex.getMessage());
+            throw new RecordNotFoundException(rex.getMessage());
+        }
     }
 
     /**
@@ -99,14 +119,20 @@ public class ResumeController {
      * @return Object contains the result message text and also the status code.
      */
     @DeleteMapping("/deleteResume/{userId}")
-    public ResponseEntity<String> deleteResume(@PathVariable Integer userId) {
-        logger.info("Controller call /deleteResume");
-        String result = service.deleteResume(userId);
-        logger.debug("Controller result /deleteResume : " + result);
-        if (result.equals(Constants.RESUME_SUCCESS_DELETE_MESSAGE)) {
+    public ResponseEntity<String> deleteResume(@PathVariable Integer userId) throws Exception {
+        try {
+            logger.info("Controller call /deleteResume");
+            String result = service.deleteResume(userId);
+            logger.debug("Controller result /deleteResume : " + result);
             return new ResponseEntity<>(result, HttpStatus.OK);
-        }else{
-            return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
+        }catch (RecordNotFoundException rex){
+            System.out.println(rex.getMessage());
+            logger.debug("Controller failed at /deleteResume : " + rex.getMessage());
+            throw new RecordNotFoundException(rex.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+            logger.debug("Controller failed to delete resume at /deleteResume : " + e.getMessage());
+            throw new Exception(e.getMessage());
         }
     }
 }

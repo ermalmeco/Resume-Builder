@@ -1,15 +1,16 @@
 package resume.builder.service;
 
 import io.gitgub.eaxdev.jsonresume.validator.JsonResume;
-import io.gitgub.eaxdev.jsonresume.validator.exeption.JsonResumeParseException;
 import io.gitgub.eaxdev.jsonresume.validator.model.BasicInfo;
 import io.gitgub.eaxdev.jsonresume.validator.model.Resume;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import resume.builder.utils.Constants;
 import resume.builder.dto.mapper.*;
 import resume.builder.entity.*;
+import resume.builder.excteption.RecordNotFoundException;
+import resume.builder.excteption.ResumeAlreadyExists;
 import resume.builder.repository.ResumeRepository;
+import resume.builder.utils.Constants;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -60,7 +61,7 @@ public class ResumeService {
     public Resume getResumeByUserId(int userId) {
         resume.builder.entity.Resume userResume = resumeRepository.findResumeByUserId(userId);
         if (userResume == null){
-            return null;
+            throw new RecordNotFoundException(Constants.RESUME_NOT_FOUND);
         }
         return buildResumeStructure(userResume);
     }
@@ -71,7 +72,7 @@ public class ResumeService {
      * @param jsonData String json based on the schema defined by https://jsonresume.org/schema/
      * @param userIdParameter int The id of the user to whom the function is saving the details
      * @return Object Resume.class type
-     * @throws Exception
+     * @throws Exception Exceptions like RecordNotFoundException or ResumeAlreadyExists
      */
     public Resume createNewResume(String jsonData,Integer userIdParameter) throws Exception {
         return saveOrUpdateResume(jsonData,userIdParameter,true);
@@ -83,7 +84,7 @@ public class ResumeService {
      * @param jsonData String json based on the schema defined by https://jsonresume.org/schema/
      * @param userIdParameter int The id of the user to whom the function is saving the details
      * @return Object Resume.class type
-     * @throws Exception
+     * @throws Exception Exceptions like RecordNotFoundException or ResumeAlreadyExists
      */
     public Resume editResume(String jsonData,Integer userIdParameter) throws Exception {
         return saveOrUpdateResume(jsonData,userIdParameter,false);
@@ -98,7 +99,7 @@ public class ResumeService {
      * @param jsonData String json based on the schema defined by https://jsonresume.org/schema/
      * @param userIdParameter int The id of the user to whom the function is saving the details
      * @return Object Resume.class type
-     * @throws Exception
+     * @throws Exception Exceptions like RecordNotFoundException or ResumeAlreadyExists
      */
     public Resume saveOrUpdateResume(String jsonData,Integer userIdParameter,boolean isNew) throws Exception {
         Resume deserializedResume;
@@ -109,10 +110,13 @@ public class ResumeService {
 
             resume.builder.entity.Resume newResume = resumeRepository.findResumeByUserId(userIdParameter);
             if (!isNew) {
+                if (newResume == null){
+                    throw new RecordNotFoundException(Constants.RESUME_NOT_FOUND);
+                }
                 newResume = clearExistingData(newResume);
             } else {
                 if (newResume != null){
-                    throw new Exception("User already has a Resume, You can edit that one or delete it before creating another one!");
+                    throw new ResumeAlreadyExists(Constants.RESUME_EXIST_FOR_USER_EXCEPTION);
                 }
                 newResume = new resume.builder.entity.Resume();
             }
@@ -206,14 +210,17 @@ public class ResumeService {
      * @param userIdParameter int The id of the user to whom we are deleting the Resume
      * @return String contains the result message text
      */
-    public String deleteResume(Integer userIdParameter){
+    public String deleteResume(Integer userIdParameter) throws Exception {
         resume.builder.entity.Resume resume = resumeRepository.findResumeByUserId(userIdParameter);
-        resume = clearExistingData(resume);
+        if (resume == null){
+            throw new RecordNotFoundException(Constants.RESUME_NOT_FOUND);
+        }
         try {
+            resume = clearExistingData(resume);
             resumeRepository.delete(resume);
             return Constants.RESUME_SUCCESS_DELETE_MESSAGE;
         } catch (Exception ex) {
-            return ex.toString();
+            throw new Exception(Constants.FAILED_TO_DELETE_RESUME_MESSAGE);
         }
     }
 
